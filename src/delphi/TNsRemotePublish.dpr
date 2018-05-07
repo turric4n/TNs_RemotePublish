@@ -41,7 +41,8 @@ begin
     { TODO -oUser -cConsole Main : Insert code here }
     if not AppService.IsRunningAsService then
     begin
-      TApplicationService.Init('8989');
+      Integer.Parse(ParamStr(1));
+      TApplicationService.Init(ParamStr(1));
       Process;
     end
     else
@@ -50,6 +51,7 @@ begin
       AppService.DisplayName := 'REST API for remote file publish';
       //you can pass an anonymous method to events
       AppService.CheckParams;
+      raise ENotImplemented.Create('Not implemented');
     end;
   except
     on E: Exception do

@@ -65,7 +65,7 @@ begin
 end;
 
 {$IFNDEF FPC}
-function THTTPProcessController.GetJobsFromJSON(const Body : string) : TObjectList<TPublishJSON>;
+function THTTPProcessController.GetJobsFromJSON(const Body : string) : TObjectList<TProcessJSON>;
 var
   vJSONScenario: TJSONValue;
   vJSONValue: TJSONValue;
@@ -76,7 +76,7 @@ begin
   if vJSONScenario <> nil then
   begin
     try
-      Result := TObjectList<TPublishJSON>.Create(True);
+      Result := TObjectList<TProcessJSON>.Create(True);
       if vJSONScenario is TJSONArray then
       begin
         TLoggerFactory.GetFactory.GetInstance.Log('JSON is an Array', False);
@@ -163,14 +163,14 @@ function THTTPProcessController.GetJobFromJson(jsonObject: TJSONObject): TProces
 begin
   Result := TProcessJSON.Create;
   {$IFNDEF FPC}
-  if jsonObject.GetValue('ProcessName') as TJSONString <> nil then
-    Result.ProcessName := TJSONString(jsonObject.GetValue('ProcessName')).ToString.Replace('"','');
-  if jsonObject.GetValue('ProcessType') as TJSONString <> nil then
-    Result.ProcessType := TJSONString(jsonObject.GetValue('ProcessType')).ToString.Replace('"','');
-  if jsonObject.GetValue('Parameters') as TJSONString <> nil then
-    Result.Parameters := TJSONString(jsonObject.GetValue('Parameters')).ToString.Replace('"','');
-  if jsonObject.GetValue('Action') as TJSONString <> nil then
-    Result.Parameters := TJSONString(jsonObject.GetValue('Parameters')).ToString.Replace('"','');
+  if jsonObject.GetValue('processname') as TJSONString <> nil then
+    Result.ProcessName := TJSONString(jsonObject.GetValue('processname')).ToString.Replace('"','');
+  if jsonObject.GetValue('processtype') as TJSONString <> nil then
+    Result.ProcessType := TJSONString(jsonObject.GetValue('processtype')).ToString.Replace('"','');
+  if jsonObject.GetValue('parameters') as TJSONString <> nil then
+    Result.Parameters := TJSONString(jsonObject.GetValue('parameters')).ToString.Replace('"','');
+  if jsonObject.GetValue('action') as TJSONString <> nil then
+    Result.Action := TJSONString(jsonObject.GetValue('action')).ToString.Replace('"','');
   {$ELSE}
   if jsonObject.Get('processname') <> '' then
     Result.ProcessName := string(jsonObject.Get('processname')).Replace('"','');
@@ -198,7 +198,7 @@ var
   job : TProcessJSON;
 
 begin
-  //TLoggerFactory.GetInstance.Log(Request.HTTPContext.InContent, False);
+  TLoggerFactory.GetInstance.Log(Request.HTTPContext.InContent, False);
   if not (Request.HTTPContext.InContentType = 'application/json') then Result := 400
   else
   begin
@@ -211,7 +211,7 @@ begin
           begin
             try
               TLoggerFactory.GetFactory.GetInstance.Log('New JOB added', False);
-              TLoggerFactory.GetFactory.GetInstance.Log(job.ProcessName, False);
+              TLoggerFactory.GetFactory.GetInstance.Log(job.ProcessName + ' ' + job.ProcessType + ' ' + job.Parameters + ' ' + job.Parameters, False);
               Manage(job);
               Result := 200;
               Request.HTTPContext.OutContent := job.ProcessName + ' Service Started';

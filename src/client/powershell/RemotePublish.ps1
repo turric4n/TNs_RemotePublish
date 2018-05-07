@@ -42,12 +42,12 @@ if ([System.IO.File]::Exists($File))
     try {
         if ($action -eq "publish"){
 		    echo "Publishing " $serviceName " on Remote machine"
-            $response = Invoke-WebRequest ($apipublishcontrol + "/publish")  -ContentType $contenttype -Method POST -Body $json -TimeoutSec 10000
+            $response = Invoke-WebRequest ($apipublishcontrol + "/publish")  -ContentType $contenttype -Method POST -Body $json -Verbose
         }
     }
     catch {
        echo $_.Exception.Message
-       echo "Error stopping service"
+       echo "Error sending file"
        $LASTEXITCODE = 1
        #[Environment]::Exit($LASTEXITCODE)
     }

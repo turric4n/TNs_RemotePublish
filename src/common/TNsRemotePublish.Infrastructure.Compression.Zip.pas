@@ -106,7 +106,7 @@ end;
 
 procedure TZipCompression.ExtractFromDiskToDisk(const Source,Destination: string);
 begin
-  {$IFNDEF FPC}                                                    procedure(Sender : TObject; Progress : Byte; var Abort : Boolean) of object;
+  {$IFNDEF FPC}
   with TZipFile.Create do
   begin
     try
@@ -129,8 +129,8 @@ begin
 end;
 
 procedure TZipCompression.ExtractFromStreamToDisk(Stream : TStream; const Destination : string);
-var
   {$IFDEF FPC}
+  var
   abunziper : TAbUnZipper;
   {$ENDIF}
 begin
