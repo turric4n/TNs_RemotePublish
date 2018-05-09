@@ -44,7 +44,7 @@ end;
 
 function THTTPDefaultController.ProcessRequest(Request: THTTPRestRequest): Cardinal;
 begin
-  Request.HTTPContext.OutContent := 'Hello World';
+  Request.ResponseInfo.ContentText := 'Hello World';
   Result := 200;
 end;
 

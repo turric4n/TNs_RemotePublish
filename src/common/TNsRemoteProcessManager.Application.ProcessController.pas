@@ -198,12 +198,12 @@ var
   job : TProcessJSON;
 
 begin
-  TLoggerFactory.GetInstance.Log(Request.HTTPContext.InContent, False);
-  if not (Request.HTTPContext.InContentType = 'application/json') then Result := 400
+  TLoggerFactory.GetInstance.Log(Request.InContent, False);
+  if not (Request.RequestInfo.ContentType = 'application/json') then Result := 400
   else
   begin
     try
-      jobs := GetJobsFromJson(Request.HTTPContext.InContent);
+      jobs := GetJobsFromJson(Request.InContent);
       if jobs <> nil then
       begin
         try
@@ -214,7 +214,7 @@ begin
               TLoggerFactory.GetFactory.GetInstance.Log(job.ProcessName + ' ' + job.ProcessType + ' ' + job.Parameters + ' ' + job.Parameters, False);
               Manage(job);
               Result := 200;
-              Request.HTTPContext.OutContent := job.ProcessName + ' Service Started';
+              Request.ResponseInfo.ContentText := job.ProcessName + ' Service Started';
             except
               on e : Exception do
               begin
@@ -231,7 +231,7 @@ begin
     except
       on e : Exception do
       begin
-        Request.HTTPContext.OutContent := 'Invalid JSON Request ' + e.Message;
+        Request.ResponseInfo.ContentText := 'Invalid JSON Request ' + e.Message;
         Result := 500;
       end;
     end;

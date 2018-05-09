@@ -182,10 +182,10 @@ var
   jobs : TFPGObjectList<TPublishJSON>;
   {$ENDIF}
 begin
-  if Request.HTTPContext.InContentType = 'application/json' then
+  if Request.RequestInfo.ContentType = 'application/json' then
   begin
     try
-      jobs := GetJobsFromJSON(Request.HTTPContext.InContent);
+      jobs := GetJobsFromJSON(Request.InContent);
       try
         for job in jobs do PublishJob(job);
       except
