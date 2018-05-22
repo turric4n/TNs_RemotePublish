@@ -93,12 +93,12 @@ end;
 
 function TNSRemotePMProcess.StartService(const ServiceName: string): Cardinal;
 begin
-  //Result := Cardinal(ServiceStart('localhost', ServiceName));
+  Result := Cardinal(ServiceStart('localhost', ServiceName));
 end;
 
 function TNSRemotePMProcess.StopService(const ServiceName: string): Cardinal;
 begin
-  //Result := Cardinal(ServiceStop('localhost', ServiceName));
+  Result := Cardinal(ServiceStop('localhost', ServiceName));
 end;
 
 end.

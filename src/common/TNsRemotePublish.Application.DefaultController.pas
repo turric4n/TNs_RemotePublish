@@ -13,7 +13,6 @@ type
     public
       constructor Create;
       function ProcessRequest(Request : THTTPRestRequest) : Cardinal; override;
-      destructor Destroy;
   end;
 
 var
@@ -35,12 +34,6 @@ begin
   froute.needStaticController := False;
 end;
 
-destructor THTTPDefaultController.Destroy;
-var
-  llega : Boolean;
-begin
-  llega := True;
-end;
 
 function THTTPDefaultController.ProcessRequest(Request: THTTPRestRequest): Cardinal;
 begin

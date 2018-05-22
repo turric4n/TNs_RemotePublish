@@ -28,13 +28,16 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="2">
+    <RequiredPackages Count="3">
       <Item1>
-        <PackageName Value="Abbrevia"/>
+        <PackageName Value="indylaz"/>
       </Item1>
       <Item2>
-        <PackageName Value="LCL"/>
+        <PackageName Value="Abbrevia"/>
       </Item2>
+      <Item3>
+        <PackageName Value="LCL"/>
+      </Item3>
     </RequiredPackages>
     <Units Count="2">
       <Unit0>
@@ -53,7 +56,7 @@
     <PathDelim Value="\"/>
     <SearchPaths>
       <IncludeFiles Value="..\common;..\..\..\TNs_HTTPRestFramework\src;..\..\..\mORMot\SQLite3;..\..\..\mORMot;$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..\common;..\..\..\TNs_HTTPRestFramework\src;..\..\..\mORMot\SQLite3;..\..\..\mORMot"/>
+      <OtherUnitFiles Value="..\common;..\..\..\TNs_HTTPRestFramework\src;..\..\..\mORMot\SQLite3;..\..\..\mORMot;..\..\..\QuickLogger;..\..\..\QuickLib"/>
       <UnitOutputDirectory Value="..\..\bin\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

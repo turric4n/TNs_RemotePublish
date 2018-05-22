@@ -49,9 +49,12 @@ begin
     begin
       AppService.ServiceName := 'RemotePublishManager';
       AppService.DisplayName := 'REST API for remote file publish';
+      AppService.OnStart := procedure
+      begin
+        TApplicationService.Init('8580');
+      end;
       //you can pass an anonymous method to events
       AppService.CheckParams;
-      raise ENotImplemented.Create('Not implemented');
     end;
   except
     on E: Exception do
