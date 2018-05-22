@@ -23,6 +23,7 @@ type
     private
       fonprocessevent : TOnProcessEvent;
       fcanceloperation : Boolean;
+      fCurrentFile : string;
       {$IFNDEF FPC}
       procedure OnZipProcessSelf(Sender: TObject; FileName: string; Header: TZipHeader; Position: Int64);
       {$ELSE}
@@ -181,13 +182,21 @@ begin
     // do something with cancellation
   end
   else
-  if Assigned(fonprocessevent) then fonprocessevent(Self, FileName, Position);
+  if (Assigned(fonprocessevent)) and (fCurrentFile <> FileName) then
+  begin
+    fCurrentFile := FileName; //send only one event per file
+    fonprocessevent(Self, FileName, Position);
+  end;
 end;
 {$ELSE}
 procedure TZipCompression.OnZipProcessSelf(Sender : TObject; Item : TAbArchiveItem; Progress : Byte; var Abort : Boolean);
 begin
   abort := fcanceloperation;
-  if Assigned(fonprocessevent) then fonprocessevent(Self, Item.FileName, 0);
+  if Assigned(fonprocessevent) and (fCurrentFile <> FileName) then
+  begin
+    fCurrentFile := FileName; //send only one event per file
+    fonprocessevent(Self, Item.FileName, 0);
+  end;
 end;
 
 {$ENDIF}
