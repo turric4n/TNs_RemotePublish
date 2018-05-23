@@ -19,7 +19,7 @@ uses
   SysUtils,
 {$ENDIF}
   TNsRestFramework.Application.Service,
-  TNsRestFramework.Infrastructure.LoggerFactory,
+  TNsRestFramework.Infrastructure.Services.Logger,
   TNsRemotePublish.Application.HTTPControllers;
 
 var
@@ -33,7 +33,7 @@ begin
     Integer.Parse(ParamStr(1));
     TApplicationService.Init(ParamStr(1));
     {$ENDIF}
-    TLoggerFactory.GetInstance.Log('HTTP Server is listening. Press a Key to stop service ' + ParamStr(1), False);
+    Logger.Info('HTTP Server is listening on port %s. Press a Key to stop service ',[ParamStr(1)]);
     while True do
     begin
       Sleep(100);

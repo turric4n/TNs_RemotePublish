@@ -13,7 +13,7 @@ uses
   fgl,
   fpjson,
   {$ENDIF}
-  TNsRestFramework.Infrastructure.LoggerFactory,
+  TNsRestFramework.Infrastructure.Services.Logger,
   TNsRestFramework.Infrastructure.HTTPControllerFactory,
   TNsRestFramework.Infrastructure.HTTPRestRequest,
   TNsRestFramework.Infrastructure.HTTPRouting,
@@ -69,7 +69,6 @@ function THTTPProcessController.GetJobsFromJSON(const Body : string) : TObjectLi
 var
   vJSONScenario: TJSONValue;
   vJSONValue: TJSONValue;
-  vJSONPair : TJSONPair;
 begin
   Result := nil;
   vJSONScenario := TJSONObject.ParseJSONValue(Body, False);
@@ -79,7 +78,7 @@ begin
       Result := TObjectList<TProcessJSON>.Create(True);
       if vJSONScenario is TJSONArray then
       begin
-        TLoggerFactory.GetFactory.GetInstance.Log('JSON is an Array', False);
+        Logger.Info('JSON is an Array');
         for vJSONValue in vJSONScenario as TJSONArray do
         begin
           if vJSONValue is TJSONObject then
@@ -108,7 +107,7 @@ begin
       case vJSONScenario.JSONType of
        jtArray :
          begin
-           TLoggerFactory.GetFactory.GetInstance.Log('JSON is an Array', False);
+           Logger.Debug('JSON is an Array');
            for I:=0 to vJSONScenario.Count -1 do
            begin
              Result.Add(GetJobFromJson(TJSONObject(vJSONScenario) as TJSONObject));
@@ -133,12 +132,12 @@ begin
     if Process.Action.ToLower = 'stop' then
     begin
       if not (TProcessFactory.GetInstanceFromName(Process.ProcessName).StopService(Process.ProcessName) > 0) then raise Exception.Create('Service cannot be stopped ' + Process.ProcessName)
-      else  TLoggerFactory.GetFactory.GetInstance.Log('Service stopped ' + Process.ProcessName, False);
+      else  Logger.Success('Service stopped ' + Process.ProcessName);
     end
     else if Process.Action.ToLower = 'start' then
     begin
       if not (TProcessFactory.GetInstanceFromName(Process.ProcessName).StartService(Process.ProcessName) > 0) then raise Exception.Create('Service cannot be started ' + Process.ProcessName)
-      else  TLoggerFactory.GetFactory.GetInstance.Log('Service started ' + Process.ProcessName, False);
+      else  Logger.Success('Service started ' + Process.ProcessName);
     end
     else raise Exception.Create('Process action unknown!');
   end
@@ -147,12 +146,12 @@ begin
     if Process.Action.ToLower = 'stop' then
     begin
       if not (TProcessFactory.GetInstanceFromName(Process.ProcessName).Kill(Process.ProcessName) > 0) then raise Exception.Create('Process can''t be terminated ' + Process.ProcessName)
-      else TLoggerFactory.GetFactory.GetInstance.Log('Process terminated ' + Process.ProcessName, False);
+      else Logger.Info('Process terminated ' + Process.ProcessName);
     end
     else if Process.Action.ToLower = 'start' then
     begin
       if not TProcessFactory.GetInstanceFromName(Process.ProcessName).Execute(Process.ProcessName, Process.Parameters) then raise Exception.Create('Process can''t be started ' + Process.ProcessName)
-      else TLoggerFactory.GetFactory.GetInstance.Log('Process started ' + Process.ProcessName, False);
+      else Logger.Success('Process started ' + Process.ProcessName);
     end
     else raise Exception.Create('Process action unknown!');
   end
@@ -198,7 +197,7 @@ var
   job : TProcessJSON;
 
 begin
-  TLoggerFactory.GetInstance.Log(Request.InContent, False);
+  Logger.Debug(Request.InContent);
   if not (Request.RequestInfo.ContentType = 'application/json') then Result := 400
   else
   begin
@@ -210,15 +209,15 @@ begin
           for job in jobs do
           begin
             try
-              TLoggerFactory.GetFactory.GetInstance.Log('New JOB added', False);
-              TLoggerFactory.GetFactory.GetInstance.Log(job.ProcessName + ' ' + job.ProcessType + ' ' + job.Parameters + ' ' + job.Parameters, False);
+              Logger.Info('New JOB added');
+              Logger.Debug(job.ProcessName + ' ' + job.ProcessType + ' ' + job.Parameters + ' ' + job.Parameters);
               Manage(job);
               Result := 200;
               Request.ResponseInfo.ContentText := job.ProcessName + ' Service Started';
             except
               on e : Exception do
               begin
-                TLoggerFactory.GetFactory.GetInstance.Log(e.Message, True);
+                Logger.Error(e.Message);
                 Result := 500;
               end;
             end;
