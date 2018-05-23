@@ -1,11 +1,15 @@
 ﻿# Remote Publish
 
+# Example : .\RemotePublish.ps1 "http://turric4n.no-ip.org:8989" "D:\ams.zip" "zip" "." "publish"
+
  param (
     [Parameter(Mandatory=$true)][string]$apipublishcontrol,
     [Parameter(Mandatory=$true)][string]$file,
     [Parameter(Mandatory=$true)][string]$filetype,
     [Parameter(Mandatory=$true)][System.IO.FileInfo]$destination,
-    [Parameter(Mandatory=$true)][string]$action
+    [Parameter(Mandatory=$true)][string]$action,
+    [Parameter(Mandatory=$false)][switch]$cleanup,
+    [Parameter(Mandatory=$false)][switch]$backup
  )
 
  $contenttype = "application/json"
@@ -16,6 +20,8 @@ class PublishJob
   [string]$filetype
   [string]$destination
   [string]$action
+  [boolean]$cleanup
+  [boolean]$backup
 }
 
 Import-Module Microsoft.PowerShell.Utility
@@ -29,6 +35,8 @@ if ([System.IO.File]::Exists($File))
       $publish.Filetype = $filetype
       $publish.Destination = $destination.ToString()
       $publish.Action = $action
+      $publish.Cleanup = $cleanup
+      $publish.Backup = $backup
       $json = $publish | ConvertTo-Json
     } 
     catch {
