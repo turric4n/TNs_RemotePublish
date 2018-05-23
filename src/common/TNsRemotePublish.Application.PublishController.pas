@@ -117,7 +117,8 @@ begin
       Result.FFileType := string(jsonObject.Get('filetype')).Replace('"','');
     {$ENDIF}
   except
-    on E : Exception do TLoggerFactory.GetFactory.GetInstance.Log(Format('Exception: %s JSON Content: %s',[e.Message,JsonObject.ToJSON]), True);
+    on E : Exception do raise Exception.CreateFmt('Not valid Json: %s',[e.Message]);
+    //on E : Exception do TLoggerFactory.GetFactory.GetInstance.Log(Format('Exception: %s JSON Content: %s',[e.Message,JsonObject.ToJSON]), True);
   end;
 end;
 
