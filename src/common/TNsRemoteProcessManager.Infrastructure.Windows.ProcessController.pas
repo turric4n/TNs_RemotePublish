@@ -6,8 +6,9 @@ uses
   TNSRemoteProcessManager.Domain.Interfaces.ProcessFunctionality,
   TNsRestFramework.Infrastructure.LoggerFactory,
   TNSRemoteProcessManager.Domain.Models.Process,
+  Quick.Service,
+  Quick.Process,
   {$IFNDEF FPC}
-  QuickServices,
   Winapi.Windows,
   Winapi.ShellAPI,
   System.SysUtils,
@@ -72,17 +73,17 @@ end;
 
 function TNSRemotePMProcess.Kill(PID: Integer): Cardinal;
 begin
-  //
+  Result := Cardinal(KillProcess(PID));
 end;
 
 function TNSRemotePMProcess.Kill(const ProcessName: string): Cardinal;
 begin
-
+  Result := Cardinal(KillProcess(ProcessName));
 end;
 
 function TNSRemotePMProcess.Kill : Cardinal;
 begin
-  //
+
 end;
 
 
