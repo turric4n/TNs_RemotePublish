@@ -19,7 +19,6 @@ type
   TProcessFactory = class
     public
       class function GetInstanceFromName(const ProcessName : string) : IProcessFunctionality;
-      class function GetInstanceFromJSON(const JSON : string) : IProcessFunctionality;
   end;
 
 implementation
@@ -31,10 +30,6 @@ begin
   Result := TNSRemotePMProcess.Create(ProcessName);
 end;
 
-class function TProcessFactory.GetInstanceFromJSON(const JSON : string) : IProcessFunctionality;
-begin
-  //
-end;
 
 end.
 

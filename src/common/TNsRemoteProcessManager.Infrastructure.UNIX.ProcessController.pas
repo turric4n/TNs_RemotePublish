@@ -55,10 +55,6 @@ begin
   Result := ExecuteProcess(Path, Params) > 0;
 end;
 
-procedure TNSRemotePMProcess.GetProcesses;
-begin
-  //
-end;
 
 function TNSRemotePMProcess.Kill(const ProcessName: string): Cardinal;
 var

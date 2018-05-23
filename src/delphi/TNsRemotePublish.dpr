@@ -38,7 +38,6 @@ end;
 
 begin
   try
-    { TODO -oUser -cConsole Main : Insert code here }
     if not AppService.IsRunningAsService then
     begin
       Integer.Parse(ParamStr(1));
@@ -49,11 +48,11 @@ begin
     begin
       AppService.ServiceName := 'RemotePublishManager';
       AppService.DisplayName := 'REST API for remote file publish';
+      {TODO -oTurrican -cGeneral : Load initialization from configuration file.}
       AppService.OnStart := procedure
       begin
         TApplicationService.Init('8580');
       end;
-      //you can pass an anonymous method to events
       AppService.CheckParams;
     end;
   except
