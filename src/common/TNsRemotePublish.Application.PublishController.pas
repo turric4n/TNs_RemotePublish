@@ -9,6 +9,7 @@ uses
   System.JSON,
   System.Generics.Collections,
   System.NetEncoding,
+  System.IOUtils,
   {$ELSE}
   Classes,
   sysutils,
@@ -31,15 +32,21 @@ type
       FPublishFile: string;
       FDestination: string;
       FAction: string;
+      FCleanup: Boolean;
+      FBackup: Boolean;
       FFileType : string;
       procedure SetPublishFile(const Value: string);
       procedure SetAction(const Value: string);
       procedure SetDestination(const Value: string);
+    procedure SetBackup(const Value: Boolean);
+    procedure SetCleanup(const Value: Boolean);
     public
       property FileType : string read FFileType write FFileType;
       property PublishFile : string read FPublishFile write SetPublishFile;
       property Destination : string read FDestination write SetDestination;
       property Action : string read FAction write SetAction;
+      property Cleanup : Boolean read FCleanup write SetCleanup;
+      property Backup : Boolean read FBackup write SetBackup;
   end;
 
   { THTTPPublishController }
@@ -80,26 +87,38 @@ end;
 
 function THTTPPublishController.GetJobFromJson(jsonObject: TJSONObject): TPublishJSON;
 begin
-  Result := TPublishJSON.Create;
-  {$IFNDEF FPC}
-  if jsonObject.GetValue('file') as TJSONString <> nil then
-    Result.FPublishFile := TJSONString(jsonObject.GetValue('file')).ToString.Replace('"','');
-  if jsonObject.GetValue('destination') as TJSONString <> nil then
-    Result.FDestination := TJSONString(jsonObject.GetValue('destination')).ToString.Replace('"','');
-  if jsonObject.GetValue('action') as TJSONString <> nil then
-    Result.FAction := TJSONString(jsonObject.GetValue('action')).ToString.Replace('"','');
-  if jsonObject.GetValue('filetype') as TJSONString <> nil then
-    Result.FFileType := TJSONString(jsonObject.GetValue('filetype')).ToString.Replace('"','');
-  {$ELSE}
-  if jsonObject.Get('file') <> '' then
-    Result.FPublishFile := string(jsonObject.Get('file')).Replace('"','');
-  if jsonObject.Get('destination') <> '' then
-    Result.FDestination := string(jsonObject.Get('destination')).Replace('"','');
-  if jsonObject.Get('action') <> '' then
-    Result.FAction := string(jsonObject.Get('action')).Replace('"','');
-  if jsonObject.Get('filetype') <> '' then
-    Result.FFileType := string(jsonObject.Get('filetype')).Replace('"','');
-  {$ENDIF}
+  try
+    Result := TPublishJSON.Create;
+    {$IFNDEF FPC}
+    if jsonObject.GetValue('file') as TJSONString <> nil then
+      Result.FPublishFile := TJSONString(jsonObject.GetValue('file')).ToString.Replace('"','');
+    if jsonObject.GetValue('destination') as TJSONString <> nil then
+      Result.FDestination := TJSONString(jsonObject.GetValue('destination')).ToString.Replace('"','');
+    if jsonObject.GetValue('action') as TJSONString <> nil then
+      Result.FAction := TJSONString(jsonObject.GetValue('action')).ToString.Replace('"','');
+    if jsonObject.GetValue('cleanup') as TJSONBool <> nil then
+      Result.FCleanup := (jsonObject.GetValue('cleanup') as TJSONBool).AsBoolean;
+    if jsonObject.GetValue('backup') as TJSONBool <> nil then
+      Result.FBackup := (jsonObject.GetValue('backup') as TJSONBool).AsBoolean;
+    if jsonObject.GetValue('filetype') as TJSONString <> nil then
+      Result.FFileType := TJSONString(jsonObject.GetValue('filetype')).ToString.Replace('"','');
+    {$ELSE}
+    if jsonObject.Get('file') <> '' then
+      Result.FPublishFile := string(jsonObject.Get('file')).Replace('"','');
+    if jsonObject.Get('destination') <> '' then
+      Result.FDestination := string(jsonObject.Get('destination')).Replace('"','');
+    if jsonObject.Get('action') <> '' then
+      Result.FAction := string(jsonObject.Get('action')).Replace('"','');
+    if jsonObject.Get('cleanup') as TJSONBool <> nil then
+      Result.FCleanup := (jsonObject.Get('cleanup') as TJSONBool).AsBoolean;
+    if jsonObject.Get('backup') as TJSONBool <> nil then
+      Result.FBackup := (jsonObject.Get('backup') as TJSONBool).AsBoolean;
+    if jsonObject.Get('filetype') <> '' then
+      Result.FFileType := string(jsonObject.Get('filetype')).Replace('"','');
+    {$ENDIF}
+  except
+    on E : Exception do TLoggerFactory.GetFactory.GetInstance.Log(Format('Exception: %s JSON Content: %s',[e.Message,JsonObject.ToJSON]), True);
+  end;
 end;
 
 
@@ -206,6 +225,7 @@ procedure THTTPPublishController.PublishJob(Job: TPublishJSON);
 var
   strstream : TStringStream;
   dest : string;
+  destbak : string;
   compressor : ICompression;
 begin
   //Base 64 to stream
@@ -220,6 +240,27 @@ begin
     compressor.SubscribeOnProcess(OnExtractFile);
     for dest in job.FDestination.Split([',']) do
     begin
+      //if backup option, rename folder before publish
+      if Job.Backup then
+      begin
+        destbak := dest + '_bak';
+        if DirectoryExists(destbak) then
+        begin
+          TLoggerFactory.GetFactory.GetInstance.Log('Removing previous backup directory...', False);
+          TDirectory.Delete(destbak,True);
+        end;
+        TDirectory.Move(dest,destbak);
+        TLoggerFactory.GetFactory.GetInstance.Log('Renamed directory', False);
+        ForceDirectories(dest);
+      end;
+      //if cleanup option, delete all files before publish
+      if Job.Cleanup then
+      begin
+        TLoggerFactory.GetFactory.GetInstance.Log('Cleaning up directory...', False);
+        TDirectory.Delete(dest,True);
+        ForceDirectories(dest);
+      end;
+      //decompress files
       compressor.ExtractFromStreamToDisk(strstream, dest);
     end;
   finally
@@ -232,6 +273,16 @@ end;
 procedure TPublishJSON.SetAction(const Value: string);
 begin
   FAction := Value;
+end;
+
+procedure TPublishJSON.SetBackup(const Value: Boolean);
+begin
+  FBackup := Value;
+end;
+
+procedure TPublishJSON.SetCleanup(const Value: Boolean);
+begin
+  FCleanup := Value;
 end;
 
 procedure TPublishJSON.SetDestination(const Value: string);
