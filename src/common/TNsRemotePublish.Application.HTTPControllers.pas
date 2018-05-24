@@ -4,6 +4,7 @@ interface
 
 uses
   TNsRemotePublish.Application.DefaultController,
+  TNsRemotePublish.Application.WarmController,
   TNsRemotePublish.Application.PublishController,
   TNsRemoteProcessManager.Application.ProcessController;
 
