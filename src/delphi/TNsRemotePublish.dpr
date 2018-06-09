@@ -2,8 +2,6 @@ program TNsRemotePublish;
 
 {$APPTYPE CONSOLE}
 
-{$include Synopse.inc}
-
 {$R *.res}
 
 uses
