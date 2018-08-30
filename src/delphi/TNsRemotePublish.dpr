@@ -2,8 +2,6 @@ program TNsRemotePublish;
 
 {$APPTYPE CONSOLE}
 
-{$include Synopse.inc}
-
 {$R *.res}
 
 uses
@@ -15,7 +13,9 @@ uses
   Quick.AppService,
   {$ENDIF}
   TNsRestFramework.Application.Service,
-  TNSRemotePublish.Application.HTTPControllers;
+  TNSRemotePublish.Application.HTTPControllers,
+  TNsRestFramework.Infrastructure.Interfaces.Logger,
+  TNsRestFramework.Infrastructure.Services.Logger;
 
 var
   {$IFDEF MSWINDOWS}
@@ -42,6 +42,8 @@ begin
     begin
       Integer.Parse(ParamStr(1));
       TApplicationService.Init(ParamStr(1));
+      Logger.SetRotation(20,False,10,'logs');
+      Logger.SetLogLevel(lvALL);
       Process;
     end
     else

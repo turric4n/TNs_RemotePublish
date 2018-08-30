@@ -132,13 +132,15 @@ begin
   begin
     if Process.Action.ToLower = 'stop' then
     begin
+      Logger.Info('Stopping service "%s"...',[Process.ProcessName]);
       if not (TProcessFactory.GetInstanceFromName(Process.ProcessName).StopService(Process.ProcessName) > 0) then raise Exception.Create('Service cannot be stopped ' + Process.ProcessName)
-      else  TLoggerFactory.GetFactory.GetInstance.Log('Service stopped ' + Process.ProcessName, False);
+      else  Logger.Success('Service "%s" stopped',[Process.ProcessName]);
     end
     else if Process.Action.ToLower = 'start' then
     begin
+      Logger.Info('Starting service "%s"...',[Process.ProcessName]);
       if not (TProcessFactory.GetInstanceFromName(Process.ProcessName).StartService(Process.ProcessName) > 0) then raise Exception.Create('Service cannot be started ' + Process.ProcessName)
-      else  TLoggerFactory.GetFactory.GetInstance.Log('Service started ' + Process.ProcessName, False);
+      else  Logger.Success('Service "%s" started',[Process.ProcessName]);
     end
     else raise Exception.Create('Process action unknown!');
   end
@@ -146,13 +148,15 @@ begin
   begin
     if Process.Action.ToLower = 'stop' then
     begin
+      Logger.Info('Stopping process "%s"...',[Process.ProcessName]);
       if not (TProcessFactory.GetInstanceFromName(Process.ProcessName).Kill(Process.ProcessName) > 0) then raise Exception.Create('Process can''t be terminated ' + Process.ProcessName)
-      else TLoggerFactory.GetFactory.GetInstance.Log('Process terminated ' + Process.ProcessName, False);
+      else Logger.Success('Process "%s" terminated',[Process.ProcessName]);
     end
     else if Process.Action.ToLower = 'start' then
     begin
+      Logger.Info('Starting process "%s"...',[Process.ProcessName]);
       if not TProcessFactory.GetInstanceFromName(Process.ProcessName).Execute(Process.ProcessName, Process.Parameters) then raise Exception.Create('Process can''t be started ' + Process.ProcessName)
-      else TLoggerFactory.GetFactory.GetInstance.Log('Process started ' + Process.ProcessName, False);
+      else Logger.Success('Process "%s" started',[Process.ProcessName]);
     end
     else raise Exception.Create('Process action unknown!');
   end
@@ -210,8 +214,8 @@ begin
           for job in jobs do
           begin
             try
-              TLoggerFactory.GetFactory.GetInstance.Log('New JOB added', False);
-              TLoggerFactory.GetFactory.GetInstance.Log(job.ProcessName + ' ' + job.ProcessType + ' ' + job.Parameters + ' ' + job.Parameters, False);
+              Logger.Info('New process JOB added');
+              Logger.Debug('Job: %s %s %s %s',[job.ProcessName,job.ProcessType,job.Parameters,job.Parameters]);
               Manage(job);
               Result := 200;
               Request.ResponseInfo.ContentText := job.ProcessName + ' Service Started';

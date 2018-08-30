@@ -207,7 +207,12 @@ begin
     try
       jobs := GetJobsFromJSON(Request.InContent);
       try
-        for job in jobs do PublishJob(job);
+        for job in jobs do
+        begin
+          Logger.Info('New publish JOB added');
+          PublishJob(job);
+        end;
+        Result := 200;
       except
         on e : Exception do
         begin
@@ -262,7 +267,9 @@ begin
         ForceDirectories(dest);
       end;
       //decompress files
+      Logger.Info('Extracting files to %s...',[dest]);
       compressor.ExtractFromStreamToDisk(strstream, dest);
+      Logger.Info('Files extracted to %s',[dest]);
     end;
   finally
     strstream.Free;
