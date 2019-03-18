@@ -189,7 +189,7 @@ end;
 procedure THTTPPublishController.OnExtractFile(Sender: TObject;
   const Filename: string; Position: Int64);
 begin
-  Logger.Info('Deflating : %s',[Filename]);
+  Logger.Debug('Deflating : %s',[Filename]);
 end;
 
 function THTTPPublishController.ProcessRequest(Request: THTTPRestRequest): Cardinal;
@@ -262,9 +262,11 @@ begin
       if Job.Cleanup then
       begin
         Logger.Info('Cleaning up "%s" directory...',[dest]);
-        TDirectory.Delete(dest,True);
+        if DirectoryExists(dest) then TDirectory.Delete(dest,True);
         ForceDirectories(dest);
         Logger.Success('Cleaned "%s" directory',[dest]);
+        if not DirectoryExists(dest) then raise Exception.CreateFmt('Destination folder "%s" not exists!',[dest]);
+
       end;
       //decompress files
       Logger.Info('Extracting files to %s...',[dest]);
