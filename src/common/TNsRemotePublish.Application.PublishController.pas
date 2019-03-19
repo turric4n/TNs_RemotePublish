@@ -264,7 +264,10 @@ begin
       begin
         TLoggerFactory.GetFactory.GetInstance.Log('Cleaning up directory...', False);
         TDirectory.Delete(dest,True);
+        Logger.Info('Force directories "%s"', [dest]);
         ForceDirectories(dest);
+        Logger.Success('Forced direcotries "%s"', [dest]);
+        Logger.Success('Cleaned "%s" directory',[dest]);
       end;
       //decompress files
       Logger.Info('Extracting files to %s...',[dest]);
