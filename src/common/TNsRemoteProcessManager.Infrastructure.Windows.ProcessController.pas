@@ -69,7 +69,9 @@ end;
 
 function TNSRemotePMProcess.Kill(const ProcessName: string): Cardinal;
 begin
-  Result := Cardinal(KillProcess(ProcessName));
+  Result := 1;
+  //Assert is running before kill
+  if IsProcessRunnig(ProcessName, False) then Result := KillProcess(ProcessName);
 end;
 
 
