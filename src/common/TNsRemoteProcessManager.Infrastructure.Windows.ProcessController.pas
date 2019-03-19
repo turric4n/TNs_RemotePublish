@@ -4,7 +4,7 @@ interface
 
 uses
   TNSRemoteProcessManager.Domain.Interfaces.ProcessFunctionality,
-  TNsRestFramework.Infrastructure.Services.Logger,
+  TNsRestFramework.Infrastructure.LoggerFactory,
   TNSRemoteProcessManager.Domain.Models.Process,
   Quick.Service,
   Quick.Process,

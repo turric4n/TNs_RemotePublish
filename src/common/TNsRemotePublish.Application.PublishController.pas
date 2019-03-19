@@ -20,7 +20,7 @@ uses
   {$ENDIF}
   TNsRemotePublish.Infrastructure.CompressionFactory,
   TNSRemotePublish.Infrastructure.Interfaces.Compression,
-  TNsRestFramework.Infrastructure.Services.Logger,
+  TNsRestFramework.Infrastructure.LoggerFactory,
   TNsRestFramework.Infrastructure.HTTPControllerFactory,
   TNsRestFramework.Infrastructure.HTTPRestRequest,
   TNsRestFramework.Infrastructure.HTTPRouting,
@@ -118,7 +118,7 @@ begin
     {$ENDIF}
   except
     on E : Exception do raise Exception.CreateFmt('Not valid Json: %s',[e.Message]);
-    //on E : Exception do Logger.Error('Exception: %s JSON Content: %s',[e.Message,JsonObject.ToJSON]);
+    //on E : Exception do TLoggerFactory.GetFactory.GetInstance.Log(Format('Exception: %s JSON Content: %s',[e.Message,JsonObject.ToJSON]), True);
   end;
 end;
 
@@ -129,6 +129,7 @@ function THTTPPublishController.GetJobsFromJSON(const Body : string) : TObjectLi
 var
   vJSONScenario: TJSONValue;
   vJSONValue: TJSONValue;
+  vJSONPair : TJSONPair;
 begin
   Result := nil;
   vJSONScenario := TJSONObject.ParseJSONValue(Body, False);
@@ -138,7 +139,7 @@ begin
       Result := TObjectList<TPublishJSON>.Create(True);
       if vJSONScenario is TJSONArray then
       begin
-        Logger.Debug('JSON is an Array');
+        TLoggerFactory.GetFactory.GetInstance.Log('JSON is an Array', False);
         for vJSONValue in vJSONScenario as TJSONArray do
         begin
           if vJSONValue is TJSONObject then
@@ -168,7 +169,7 @@ begin
       case vJSONScenario.JSONType of
        jtArray :
          begin
-           Logger.Debug('JSON is an Array');
+           TLoggerFactory.GetFactory.GetInstance.Log('JSON is an Array', False);
            for I:=0 to vJSONScenario.Count -1 do
            begin
              Result.Add(GetJobFromJson(TJSONObject(vJSONScenario) as TJSONObject));
@@ -189,7 +190,7 @@ end;
 procedure THTTPPublishController.OnExtractFile(Sender: TObject;
   const Filename: string; Position: Int64);
 begin
-  Logger.Info('Deflating : %s',[Filename]);
+  TLoggerFactory.GetInstance.Log('Deflating : ' + Filename, False);
 end;
 
 function THTTPPublishController.ProcessRequest(Request: THTTPRestRequest): Cardinal;
@@ -215,15 +216,15 @@ begin
       except
         on e : Exception do
         begin
-          Logger.Error(e.message);
+          TLoggerFactory.GetInstance.Log(e.message, True);
           Result := 500;
         end;
       end;
     finally
       if jobs <> nil then jobs.Free;
     end;
-  end
-  else Result := 400;
+  end;
+  Result := 200;
 end;
 
 procedure THTTPPublishController.PublishJob(Job: TPublishJSON);
@@ -251,20 +252,19 @@ begin
         destbak := dest + '_bak';
         if DirectoryExists(destbak) then
         begin
-          Logger.Info('Removing previous backup "%s" directory...',[dest]);
+          TLoggerFactory.GetFactory.GetInstance.Log('Removing previous backup directory...', False);
           TDirectory.Delete(destbak,True);
         end;
         TDirectory.Move(dest,destbak);
-        Logger.Success('Renamed "%s" directory',[dest]);
+        TLoggerFactory.GetFactory.GetInstance.Log('Renamed directory', False);
         ForceDirectories(dest);
       end;
       //if cleanup option, delete all files before publish
       if Job.Cleanup then
       begin
-        Logger.Info('Cleaning up "%s" directory...',[dest]);
+        TLoggerFactory.GetFactory.GetInstance.Log('Cleaning up directory...', False);
         TDirectory.Delete(dest,True);
         ForceDirectories(dest);
-        Logger.Success('Cleaned "%s" directory',[dest]);
       end;
       //decompress files
       Logger.Info('Extracting files to %s...',[dest]);

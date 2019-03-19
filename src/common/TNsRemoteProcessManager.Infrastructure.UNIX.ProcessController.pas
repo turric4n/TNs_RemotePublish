@@ -4,7 +4,7 @@ interface
 
 uses
   TNsRemoteProcessManager.Domain.Interfaces.ProcessFunctionality,
-  TNsRestFramework.Infrastructure.Services.Logger,
+  TNsRestFramework.Infrastructure.LoggerFactory,
   TNsRemoteProcessManager.Domain.Models.Process,
   {$IFNDEF FPC}
     System.Classes;
