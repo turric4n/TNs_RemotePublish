@@ -13,7 +13,7 @@ uses
   fgl,
   fpjson,
   {$ENDIF}
-  TNsRestFramework.Infrastructure.LoggerFactory,
+  TNsRestFramework.Infrastructure.Services.Logger,
   TNsRestFramework.Infrastructure.HTTPControllerFactory,
   TNsRestFramework.Infrastructure.HTTPRestRequest,
   TNsRestFramework.Infrastructure.HTTPRouting,
@@ -69,7 +69,6 @@ function THTTPProcessController.GetJobsFromJSON(const Body : string) : TObjectLi
 var
   vJSONScenario: TJSONValue;
   vJSONValue: TJSONValue;
-  vJSONPair : TJSONPair;
 begin
   Result := nil;
   vJSONScenario := TJSONObject.ParseJSONValue(Body, False);
@@ -79,7 +78,7 @@ begin
       Result := TObjectList<TProcessJSON>.Create(True);
       if vJSONScenario is TJSONArray then
       begin
-        TLoggerFactory.GetFactory.GetInstance.Log('JSON is an Array', False);
+        Logger.Info('JSON is an Array');
         for vJSONValue in vJSONScenario as TJSONArray do
         begin
           if vJSONValue is TJSONObject then
@@ -108,7 +107,7 @@ begin
       case vJSONScenario.JSONType of
        jtArray :
          begin
-           TLoggerFactory.GetFactory.GetInstance.Log('JSON is an Array', False);
+           Logger.Debug('JSON is an Array');
            for I:=0 to vJSONScenario.Count -1 do
            begin
              Result.Add(GetJobFromJson(TJSONObject(vJSONScenario) as TJSONObject));
@@ -202,7 +201,7 @@ var
   job : TProcessJSON;
 
 begin
-  TLoggerFactory.GetInstance.Log(Request.InContent, False);
+  Logger.Debug(Request.InContent);
   if not (Request.RequestInfo.ContentType = 'application/json') then Result := 400
   else
   begin
@@ -222,7 +221,7 @@ begin
             except
               on e : Exception do
               begin
-                TLoggerFactory.GetFactory.GetInstance.Log(e.Message, True);
+                Logger.Error(e.Message);
                 Result := 500;
               end;
             end;
