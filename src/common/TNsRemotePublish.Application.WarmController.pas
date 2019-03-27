@@ -42,6 +42,7 @@ var
 begin
   client := THTTPClient.Create;
   try
+    Logger.Info('Warm "%s" called',[URL]);
     if client.Get(URL).StatusCode <> 200 then raise Exception.Create('Server returned error code')
     else Result := 200;
   finally
@@ -100,6 +101,7 @@ var
 begin
   if Request.Method = 'POST' then
   begin
+    Logger.Info('Warm method called');
     for url in Request.InContent.Split([',']) do Result := CallURL(url);
   end
   else Result := 400;
