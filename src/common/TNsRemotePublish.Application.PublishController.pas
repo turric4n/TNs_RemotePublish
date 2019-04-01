@@ -261,12 +261,12 @@ begin
       //if cleanup option, delete all files before publish
       if Job.Cleanup then
       begin
-        TLoggerFactory.GetFactory.GetInstance.Log('Cleaning up directory...', False);
-        TDirectory.Delete(dest,True);
-        Logger.Info('Force directories "%s"', [dest]);
+        Logger.Info('Cleaning up "%s" directory...',[dest]);
+        if DirectoryExists(dest) then TDirectory.Delete(dest,True);
         ForceDirectories(dest);
-        Logger.Success('Forced direcotries "%s"', [dest]);
         Logger.Success('Cleaned "%s" directory',[dest]);
+        if not DirectoryExists(dest) then raise Exception.CreateFmt('Destination folder "%s" not exists!',[dest]);
+
       end;
       //decompress files
       Logger.Info('Extracting files to %s...',[dest]);
