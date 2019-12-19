@@ -4,16 +4,18 @@ interface
 
 uses
   TNSRemotePublish.Infrastructure.Interfaces.Compression,
-  {$IFNDEF FPC}
-  System.Classes, System.Zip, System.SysUtils;
-  {$ELSE}
+  {$IFDEF  FPC}
   Classes,
-  sysutils,
+  SysUtils,
+  {$ELSE}
+  System.Classes,
+  System.SysUtils,
+  {$ENDIF}
   AbZipper,
+  AbUtils,
   AbArcTyp,
   AbBase,
   AbUnzper;
-  {$ENDIF}
 
 type
 
@@ -24,11 +26,8 @@ type
       fonprocessevent : TOnProcessEvent;
       fcanceloperation : Boolean;
       fCurrentFile : string;
-      {$IFNDEF FPC}
-      procedure OnZipProcessSelf(Sender: TObject; FileName: string; Header: TZipHeader; Position: Int64);
-      {$ELSE}
       procedure OnZipProcessSelf(Sender : TObject; Item : TAbArchiveItem; Progress : Byte; var Abort : Boolean);
-      {$ENDIF}
+      procedure OnCompressionItemFail(Sender : TObject; Item : TAbArchiveItem; ProcessType : TAbProcessType; ErrorClass : TAbErrorClass; ErrorCode : Integer);
     public
       function AddFileToCompressionBytesFromBytes(CompressionBytes : TBytes; FileBytes : TBytes) : TBytes;
       function AddFileToCompressionBytesFromDisk(const Path : string; CompressionBytes : TBytes) : TBytes;
@@ -47,6 +46,9 @@ type
       procedure CancelCurrentOperation;
   end;
 
+const
+  IORETRIES = 5;
+
 
 implementation
 
@@ -59,11 +61,7 @@ end;
 
 procedure TZipCompression.AddDiskDirectoryToCompressionDisk(const Path: string; FilenamePath: string);
 begin
-  {$IFNDEF FPC}
-  TZipFile.ZipDirectoryContents(FilenamePath, Path, zcDeflate, OnZipProcessSelf);
-  {$ELSE}
   raise ENotImplemented.Create('TZipCompression.AddDiskDirectoryToCompressionDisk(const Path: string; FilenamePath: string) is Not implemented yet FPC!');
-  {$ENDIF}
 end;
 
 function TZipCompression.AddFileToCompressionBytesFromBytes(
@@ -89,39 +87,12 @@ end;
 
 function TZipCompression.ExtractFromDiskToBytes(const Path: string): TBytes;
 begin
-  {$IFNDEF FPC}
-  with TZipFile.Create do
-  begin
-    try
-      Open(Path, TZipMode.zmRead);
-      Read(Path, Result);
-    finally
-      Close;
-      Free;
-    end;
-  end;
-  {$ELSE}
-  //
-  {$ENDIF}
+
 end;
 
 procedure TZipCompression.ExtractFromDiskToDisk(const Source,Destination: string);
 begin
-  {$IFNDEF FPC}
-  with TZipFile.Create do
-  begin
-    try
-      Open(Source, TZipMode.zmRead);
-      OnProgress := OnZipProcessSelf;
-      ExtractAll(Destination);;
-    finally
-      Close;
-      Free;
-    end;
-  end;
-  {$ELSE}
   //
-  {$ENDIF}
 end;
 
 function TZipCompression.ExtractFromDiskToStream(const Path: string): TStream;
@@ -130,24 +101,9 @@ begin
 end;
 
 procedure TZipCompression.ExtractFromStreamToDisk(Stream : TStream; const Destination : string);
-  {$IFDEF FPC}
-  var
+var
   abunziper : TAbUnZipper;
-  {$ENDIF}
 begin
-  {$IFNDEF FPC}
-  with TZipFile.Create do
-  begin
-    try
-      Open(Stream, TZipMode.zmRead);
-      OnProgress := OnZipProcessSelf;
-      ExtractAll(Destination);
-    finally
-      Close;
-      Free;
-    end;
-  end;
-  {$ELSE}
   if not DirectoryExists(destination) then
   begin
     try
@@ -159,6 +115,7 @@ begin
   abunziper := TAbUnZipper.Create(nil);
   try
     try
+      abunziper.OnProcessItemFailure := OnCompressionItemFail;
       abunziper.OnArchiveItemProgress:= OnZipProcessSelf;
       abunziper.ExtractOptions:=[eoCreateDirs,eoRestorePath];
       abunziper.BaseDirectory := Destination;
@@ -170,36 +127,26 @@ begin
   finally
     abunziper.Free;
   end;
-  {$ENDIF}
 end;
 
-{$IFNDEF FPC}
-procedure TZipCompression.OnZipProcessSelf(Sender: TObject; FileName: string; Header: TZipHeader; Position: Int64);
+procedure TZipCompression.OnCompressionItemFail(Sender: TObject; Item: TAbArchiveItem; ProcessType: TAbProcessType; ErrorClass: TAbErrorClass; ErrorCode: Integer);
 begin
-  if fcanceloperation then
+  if Assigned(fonprocessevent) and (fCurrentFile <> Item.FileName) then
   begin
-    fcanceloperation := False;
-    // do something with cancellation
-  end
-  else
-  if (Assigned(fonprocessevent)) and (fCurrentFile <> FileName) then
-  begin
-    fCurrentFile := FileName; //send only one event per file
-    fonprocessevent(Self, FileName, Position);
+    fCurrentFile := Item.FileName; //send only one event per file
+    fonprocessevent(Self, Item.FileName, 0, True);
   end;
 end;
-{$ELSE}
+
 procedure TZipCompression.OnZipProcessSelf(Sender : TObject; Item : TAbArchiveItem; Progress : Byte; var Abort : Boolean);
 begin
   abort := fcanceloperation;
-  if Assigned(fonprocessevent) and (fCurrentFile <> FileName) then
+  if Assigned(fonprocessevent) and (fCurrentFile <> Item.FileName) then
   begin
-    fCurrentFile := FileName; //send only one event per file
+    fCurrentFile := Item.FileName; //send only one event per file
     fonprocessevent(Self, Item.FileName, 0);
   end;
 end;
-
-{$ENDIF}
 
 function TZipCompression.StreamCompressToBytes(Stream: TStream): TBytes;
 begin

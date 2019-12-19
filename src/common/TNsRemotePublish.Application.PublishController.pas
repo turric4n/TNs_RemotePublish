@@ -53,7 +53,7 @@ type
 
   THTTPPublishController = class(THTTPController)
     private
-      procedure OnExtractFile(Sender : TObject; const Filename : string; Position: Int64);
+      procedure OnExtractFile(Sender : TObject; const Filename : string; Position: Int64; Failed : Boolean = False);
       procedure PublishJob(Job : TPublishJSON);
       function GetJobFromJson(jsonObject : TJSONObject) : TPublishJSON;
       {$IFNDEF FPC}
@@ -187,9 +187,10 @@ end;
 {$ENDIF}
 
 procedure THTTPPublishController.OnExtractFile(Sender: TObject;
-  const Filename: string; Position: Int64);
+  const Filename: string; Position: Int64; Failed : Boolean = False);
 begin
-  Logger.Debug('Deflating : %s',[Filename]);
+  if Failed then Logger.Error('Deflating Failed : %s Position : %d',[Filename, Position])
+  else Logger.Debug('Deflating : %s Position : %d',[Filename, Position]);
 end;
 
 function THTTPPublishController.ProcessRequest(Request: THTTPRestRequest): Cardinal;

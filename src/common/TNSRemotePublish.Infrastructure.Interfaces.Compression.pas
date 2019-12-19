@@ -12,7 +12,7 @@ uses
   {$ENDIF}
 
 type
-  TOnProcessEvent = procedure(Sender : TObject; const Filename : string; Position: Int64) of object;
+  TOnProcessEvent = procedure(Sender : TObject; const Filename : string; Position: Int64; Failure : Boolean = False) of object;
 
   ICompression = interface['{06475E05-906E-473F-8928-4A15B50955DE}']
     function AddFileToCompressionBytesFromBytes(CompressionBytes : TBytes; FileBytes : TBytes) : TBytes;
